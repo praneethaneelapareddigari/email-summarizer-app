@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Email Summarizer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f9fc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 50px 20px;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 2.2rem;
+      color: #333;
+    }
+
+    .upload-box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    input[type="file"] {
+      font-size: 1.1rem;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .summary-box {
+      margin-top: 40px;
+      width: 90%;
+      max-width: 700px;
+      padding: 25px;
+      border-left: 5px solid #4CAF50;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    .loader {
+      margin-top: 30px;
+      font-style: italic;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>📩 Email Summarizer</h1>
+
+  <div class="upload-box">
+    <form id="upload-form" enctype="multipart/form-data">
+      <label for="file"><strong>Select .eml or .txt file:</strong></label><br />
+      <input type="file" id="file" name="file" accept=".eml,.txt" required />
+    </form>
+  </div>
+
+  <div id="loader" class="loader" style="display: none;">⏳ Summarizing email, please wait...</div>
+
+  <div id="summary-box" class="summary-box" style="display: none;"></div>
+
+  <script>
+    const form = document.getElementById('upload-form');
+    const fileInput = document.getElementById('file');
+    const summaryBox = document.getElementById('summary-box');
+    const loader = document.getElementById('loader');
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      summaryBox.style.display = 'none';
+      loader.style.display = 'block';
+
+      fetch('/summarize_file', {
+        method: 'POST',
+        body: formData,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          loader.style.display = 'none';
+          if (data.summary) {
+            summaryBox.innerText = data.summary;
+            summaryBox.style.display = 'block';
+          } else {
+            summaryBox.innerText = "Failed to summarize email.";
+            summaryBox.style.display = 'block';
+          }
+        })
+        .catch(() => {
+          loader.style.display = 'none';
+          summaryBox.innerText = "An error occurred.";
+          summaryBox.style.display = 'block';
+        });
+    });
+  </script>
+</body>
+</html>
